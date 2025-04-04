@@ -1,0 +1,47 @@
+// https://gitlab.gnome.org/GNOME/gtk/-/blob/gtk-3-24/gtk/theme/Adwaita/_colors-public.scss
+@use "sass:color";
+$fg: #ddddddff;
+$bg: #000000ff;
+
+window.Bar {
+    background: transparent;
+    color: $fg;
+    font-weight: bold;
+    font-size: 1em;
+
+    .time {
+        margin: -0.15em 0em 0em -0.8em; // top, right, bottom ?, left ?
+    }
+
+
+    .workspaces {
+        padding: 0em 0.6em 0em 0.6em;
+        .workspace {
+            background: transparent;
+            padding: 0em 0.3em 0em 0.3em;
+            .focused {
+                margin: 0.1em;
+                padding: 0.25em 0em 0.25em 0em;
+                border-radius: 1em;
+                background: color.adjust($bg, $lightness: +40%);
+            }
+            .unfocused {
+                margin: 0.2em;
+                padding: 0.2em 0em 0.2em 0em;
+                border-radius: 1em;
+                background: color.adjust($bg, $lightness: +20%);
+            }
+            &:hover {
+                .unfocused {
+                    margin: 0.1em;
+                    transition: 50ms;
+                    padding: 0.25em 0em 0.25em 0em;
+                    border-radius: 1em;
+                    background: color.adjust($bg, $lightness: +20%);
+                }
+            }
+        }
+    }
+
+
+}
