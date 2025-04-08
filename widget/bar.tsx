@@ -1,6 +1,7 @@
 import { App, Astal, Gtk, Gdk } from "astal/gtk3"
 import { Variable, GLib, bind } from "astal"
 import Hyprland from "gi://AstalHyprland"
+import { Status } from "./background"
 
 const hypr = Hyprland.get_default()
 
@@ -15,7 +16,7 @@ function Workspaces(monitor_id: number) {
     return <box className="workspaces">
         {bind(hypr, "workspaces").as(wss => {
             wss = wss
-                .filter(ws => !(ws.id >= -99 && ws.id <= -2) && (ws.get_monitor().id == monitor_id)) // filter out special workspaces
+                .filter(ws => !(ws.id >= -99 && ws.id <= -2) && (ws.get_monitor().id == monitor_id))
 
             // if (wss.length < 2) return <box hexpand/>;  
             return wss
@@ -54,5 +55,3 @@ export default function Bar(monitor: Gdk.Monitor, monitor_id: number) {
         </box>
     </window>
 }
-
-// {monitor_id == 0 && <label className="time" label={time().as(t => t.format("%H:%M")!)} valign={Gtk.Align.START} />}

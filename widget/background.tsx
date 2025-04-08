@@ -2,7 +2,7 @@ import { App, Astal, Gtk, Gdk } from "astal/gtk3"
 import { Variable, bind, exec, GLib } from "astal"
 import Battery from "gi://AstalBattery"
 
-const Status = () => {
+const Status_ = () => {
 
     const g = Gtk.Grid.new()
 
@@ -114,3 +114,25 @@ const Status = () => {
     return g
 }
 
+
+
+const Status = () => {
+    return <box><label label="Status"></label></box>
+
+}
+
+export default function Background(monitor: Gdk.Monitor) {
+    const { TOP, BOTTOM, LEFT, RIGHT } = Astal.WindowAnchor
+
+    return <window
+        className="Background"
+        gdkmonitor={monitor}
+        exclusivity={Astal.Exclusivity.IGNORE}
+        layer={Astal.Layer.BACKGROUND}
+        anchor={TOP | BOTTOM | LEFT | RIGHT}
+        application={App}>
+        <box>
+            {Status()}
+        </box>
+    </window>
+}
