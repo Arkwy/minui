@@ -2,6 +2,7 @@ import { App, Astal, Gtk, Gdk } from "astal/gtk3"
 import { Variable, bind, exec, GLib } from "astal"
 import Battery from "gi://AstalBattery"
 import Network from "gi://AstalNetwork"
+import Bluetooth from "gi://AstalBluetooth"
 
 
 const Status = () => {
@@ -41,7 +42,7 @@ const Status = () => {
             used_val=substr($3, 1, length($3)-1);
             total_val=substr($2, 1, length($2)-1);
 
-            printf "%-6s %s / %s %s\\n", disk, used_val, total_val, unit
+            printf "%-6s %s / %s %siB\\n", disk, used_val, total_val, unit
         }'
     `;
     const disks = Variable<string>("disks unitialized").poll(
@@ -50,6 +51,8 @@ const Status = () => {
     )
 
     const network = Network.get_default()
+
+    const bluetooth = Bluetooth.get_default()
 
     const separator = () => {
         const s = Gtk.Separator.new(Gtk.Orientation.HORIZONTAL)
@@ -128,7 +131,7 @@ const Status = () => {
         <label className="state_title" label="Network" xalign={0} />
         {separator()}
         <box className="state_cell">
-            <label className="left" label="Internet" xalign={0} />
+            <label className="left" label="internet" xalign={0} />
             <label className="right" label={bind(network, "primary").as(p => {
                 if (p == Network.Primary.UNKNOWN) {
                     return "disconnected"
@@ -139,7 +142,28 @@ const Status = () => {
                 } else {
                     return "issue"
                 }
-            })} xalign={0}/>
+            })} xalign={0} />
+        </box>
+        <box className="state_cell">
+            <label className="left" label="bluetooth" xalign={0} yalign={0} />
+            <scrollable className="right" width-request={400} height-request={100}>
+                <box orientation={1}>
+                    <eventbox onClick={() => bluetooth.toggle()}>
+                        <label label={bind(bluetooth, "is_powered").as(p => p ? "enabled" : "disabled")} xalign={0}/>
+                    </eventbox>
+                    {separator()}
+                    {bind(bluetooth, "devices").as(bds =>
+                        bds.map(bd => <eventbox onClick={() => bd.connected ? bd.disconnect_device((res) => { console.log(res); }) : bd.connect_device((res) => { console.log(res); })}>
+                            <box>
+                                <icon icon={`${bd.icon}-symbolic`} />
+                                <label label="-" />
+                                <icon icon={bind(bd, "connected").as(c => c ? "bluetooth-active-symbolic" : "bluetooth-disabled-symbolic")} />
+                                <label label={`  ${bd.name}`} />
+                            </box>
+                        </eventbox>)
+                    )}
+                </box>
+            </scrollable>
         </box>
 
 

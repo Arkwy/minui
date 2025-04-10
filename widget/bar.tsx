@@ -1,7 +1,6 @@
 import { App, Astal, Gtk, Gdk } from "astal/gtk3"
 import { Variable, GLib, bind } from "astal"
 import Hyprland from "gi://AstalHyprland"
-import { Status } from "./background"
 
 const hypr = Hyprland.get_default()
 
@@ -22,7 +21,7 @@ function Workspaces(monitor_id: number) {
             return wss
                 .sort((a, b) => a.id - b.id)
                 .map(ws => (
-                    <button
+                    <eventbox
                         className="workspace"
                         hexpand
                         onClick={() => ws.focus()}
@@ -31,9 +30,9 @@ function Workspaces(monitor_id: number) {
                             <box
                                 className={bind(hypr, "focused_workspace").as(fw =>
                                     ws === fw ? "focused" : "unfocused")} />
-                            <box/>
+                            <box />
                         </box>
-                    </button>
+                    </eventbox>
                 ))
         })
         }
@@ -46,7 +45,7 @@ export default function Bar(monitor: Gdk.Monitor, monitor_id: number) {
     return <window
         className="bar"
         gdkmonitor={monitor}
-        exclusivity={Astal.Exclusivity.IGNORE}
+        exclusivity={Astal.Exclusivity.EXCLUSIVE}
         layer={Astal.Layer.TOP}
         anchor={TOP | LEFT | RIGHT}
         application={App}>
