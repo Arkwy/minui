@@ -1,13 +1,11 @@
-// https://gitlab.gnome.org/GNOME/gtk/-/blob/gtk-3-24/gtk/theme/Adwaita/_colors-public.scss
 @use "sass:color";
 $fg: #ddddddff;
 $bg: #000000ff;
+$font: DejaVuSansMono; 
 
-window.Bar {
+window.bar {
     background: transparent;
     color: $fg;
-    font-weight: bold;
-    font-size: 1em;
 
     .time {
         margin: -0.15em 0em 0em -0.8em; // top, right, bottom ?, left ?
@@ -42,6 +40,33 @@ window.Bar {
             }
         }
     }
-
-
 }
+
+window.background {
+    background: transparent;
+    color: $fg;
+    font-size: 1.8em;
+    font-family: $font;
+    .state {
+        separator.horizontal {
+            background: color.adjust($fg, $lightness: -40%);
+            min-height: 0.1em;
+            border-radius: 0.1em;
+            margin: 0.05em -.2em 0.1em -.2em;
+        }
+        .state_title {
+            margin-top: 2em;
+            font-weight: bold;
+        }
+        .state_cell {
+            margin: 0.3em 0em 0.3em 0em;
+            .left {
+                min-width: 10em;
+            }
+            .right {
+                // min-width: 10em;
+            }
+        }
+    }
+}
+

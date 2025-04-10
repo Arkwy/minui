@@ -44,7 +44,7 @@ export default function Bar(monitor: Gdk.Monitor, monitor_id: number) {
     const { TOP, LEFT, RIGHT } = Astal.WindowAnchor
 
     return <window
-        className="Bar"
+        className="bar"
         gdkmonitor={monitor}
         exclusivity={Astal.Exclusivity.IGNORE}
         layer={Astal.Layer.TOP}
