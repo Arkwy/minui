@@ -43,7 +43,12 @@
         default = pkgs.mkShell {
           packages = with pkgs; [
             typescript-language-server
-          ];
+            python313
+          ] ++ (with pkgs.python313Packages; [
+            numpy
+            (opencv4.override { enableGtk3 = true; })
+            python-lsp-server
+          ]);
           buildInputs = [
             # includes astal3 astal4 astal-io by default
             (ags.packages.${system}.default.override {

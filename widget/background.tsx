@@ -1,8 +1,9 @@
 import { App, Astal, Gtk, Gdk } from "astal/gtk3"
-import { Variable, bind, exec, GLib } from "astal"
+import { Variable, bind, exec, GLib, Gio } from "astal"
 import Battery from "gi://AstalBattery"
 import Network from "gi://AstalNetwork"
 import Bluetooth from "gi://AstalBluetooth"
+import Hyprland from "gi://AstalHyprland"
 
 
 const Status = () => {
@@ -165,14 +166,67 @@ const Status = () => {
                 </box>
             </scrollable>
         </box>
-
-
     </box>
-
 }
+
+
+class WsImg {
+    map: Map<Hyprland.Workspace, string>;
+    imgs: Array<string>;
+    
+    constructor() {
+        this.map = new Map<Hyprland.Workspace, string>()
+
+        const dir = Gio.File.new_for_path('/home/arkwy/coding_projects/minui/images/tarot/croped');
+        const enumerator = dir.enumerate_children('standard::*', Gio.FileQueryInfoFlags.NONE, null);
+
+        let fileInfo;
+        const files = [];
+
+        while ((fileInfo = enumerator.next_file(null)) !== null) {
+            const file = enumerator.get_child(fileInfo);
+            if (fileInfo.get_file_type() === Gio.FileType.REGULAR) {
+                const path = file.get_path()
+                if (path != undefined) {
+                    files.push(path);
+                }
+            }
+        }
+        this.imgs = files
+    }
+
+    get(ws: Hyprland.Workspace): string {
+        if (!this.map.has(ws)) {
+            this.map.set(ws, this.imgs[Math.floor(Math.random() * this.imgs.length)])
+        }
+
+        let ret = this.map.get(ws)
+        if (ret == undefined) {
+            console.error(`No img in map for workspace ${ws}`)
+            return "none"
+        }
+        return ret
+    }
+
+    del(ws: Hyprland.Workspace) {
+        this.map.delete(ws)
+    }
+}
+
+const ws_img = new WsImg()
+
+
+const Image = (ws: Hyprland.Workspace) => {
+    const img = Gtk.Image.new_from_file(ws_img.get(ws))
+    img.set_visible(true)
+    return img
+}
+
 
 export default function Background(monitor: Gdk.Monitor) {
     const { TOP, BOTTOM, LEFT, RIGHT } = Astal.WindowAnchor
+
+    const hypr = Hyprland.get_default()
 
     return <window
         className="background"
@@ -194,7 +248,8 @@ export default function Background(monitor: Gdk.Monitor) {
             </box>
 
             {/* rigt side = tbd */}
-            <box />
+            {bind(hypr, "focused_workspace").as(fws => Image(fws))}
+            
         </box>
     </window>
 }
