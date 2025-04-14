@@ -163,7 +163,7 @@ const Status = () => {
             <label className="right" label={disks()} xalign={0} onDestroy={() => disks.drop()} />
         </box>
 
-        <box className="state_cell">
+        <box className="state_cell" visible={bat.is_present}>
             <label className="left" label="battery" xalign={0} />
             <box className="right">
                 <label label={
@@ -194,7 +194,7 @@ const Status = () => {
             <scrollable className="right" width-request={400} height-request={100}>
                 <box orientation={1}>
                     <eventbox onClick={() => bluetooth.toggle()}>
-                        <label label={bind(bluetooth, "is_powered").as(p => p ? "enabled" : "disabled")} xalign={0}/>
+                        <label label={bind(bluetooth, "is_powered").as(p => p ? "enabled" : "disabled")} xalign={0} />
                     </eventbox>
                     {separator()}
                     {bind(bluetooth, "devices").as(bds =>
@@ -268,8 +268,8 @@ export default function Background(monitor: Gdk.Monitor) {
             </box>
 
             {/* rigt side = tbd */}
-            <box/>
-            
+            <box />
+
         </box>
     </window>
 }

@@ -20,6 +20,6 @@ App.start({
     css: style,
     main() {
         monitors.map(Bar)
-        Background(monitors[0])
+        Background(monitors[monitors.length - 1])
     },
 })
