@@ -35,20 +35,63 @@ const Status = () => {
 
 
     const disks_command = `
-        df -h --exclude-type=tmpfs --exclude-type=squashfs --exclude-type=devtmpfs --exclude-type=proc --exclude-type=efivarfs | awk 'NR>1 { 
-            disk=$6; 
-            used=$3; 
-            total=$2; 
-            unit=substr($3, length($3));  # Extract last letter (unit) from the used space string
-            used_val=substr($3, 1, length($3)-1);
-            total_val=substr($2, 1, length($2)-1);
+        df -h --exclude-type=tmpfs --exclude-type=squashfs --exclude-type=devtmpfs --exclude-type=proc --exclude-type=efivarfs | awk '
+        NR>1 {
+            disk=$6;
+            used=$3;
+            total=$2;
 
-            printf "%-6s %s / %s %siB\\n", disk, used_val, total_val, unit
+            # Extract the numerical value and unit suffix
+            used_val = substr(used, 1, length(used)-1);
+            total_val = substr(total, 1, length(total)-1);
+            used_unit = substr(used, length(used));
+            total_unit = substr(total, length(total));
+
+            # Convert used and total to bytes
+            used_bytes = used_val * 1024 ^ (index("KMGTP", used_unit));
+            total_bytes = total_val * 1024 ^ (index("KMGTP", total_unit));
+
+            # Determine the appropriate unit for total size
+            if (total_bytes >= 1024^4) {
+                unit = "TiB";
+                scale = 1024^4;
+            } else if (total_bytes >= 1024^3) {
+                unit = "GiB";
+                scale = 1024^3;
+            } else if (total_bytes >= 1024^2) {
+                unit = "MiB";
+                scale = 1024^2;
+            } else if (total_bytes >= 1024) {
+                unit = "KiB";
+                scale = 1024;
+            } else {
+                unit = "B";
+                scale = 1;
+            }
+
+            # Convert bytes back to the selected unit
+            used_val = used_bytes / scale;
+            total_val = total_bytes / scale;
+
+            # Format the output strings with conditional precision
+            if (used_val < 1) {
+                formatted_used = sprintf("%5.3f", used_val);
+            } else {
+                formatted_used = sprintf("%5.1f", used_val);
+            }
+
+            if (total_val < 1) {
+                formatted_total = sprintf("%-5.3f", total_val);
+            } else {
+                formatted_total = sprintf("%-5.1f", total_val);
+            }
+
+            printf "*%s / %s  %s   %s\\n", formatted_used, formatted_total, unit, disk;
         }'
     `;
     const disks = Variable<string>("disks unitialized").poll(
-        1000,
-        () => exec(["bash", "-c", disks_command])
+        30000,
+        () => exec(["bash", "-c", disks_command]).replace(/\*/g, '')
     )
 
     const network = Network.get_default()
@@ -119,6 +162,7 @@ const Status = () => {
             <label className="left" label="disks" xalign={0} yalign={0} />
             <label className="right" label={disks()} xalign={0} onDestroy={() => disks.drop()} />
         </box>
+
         <box className="state_cell">
             <label className="left" label="battery" xalign={0} />
             <box className="right">
@@ -170,54 +214,30 @@ const Status = () => {
 }
 
 
-class WsImg {
-    map: Map<Hyprland.Workspace, string>;
-    imgs: Array<string>;
-    
-    constructor() {
-        this.map = new Map<Hyprland.Workspace, string>()
+const RandImage = () => {
 
-        const dir = Gio.File.new_for_path('/home/arkwy/coding_projects/minui/images/tarot/croped');
-        const enumerator = dir.enumerate_children('standard::*', Gio.FileQueryInfoFlags.NONE, null);
+    const dir = Gio.File.new_for_path('/home/arkwy/home/coding_projects/minui/images/tarot/croped');
+    const enumerator = dir.enumerate_children('standard::*', Gio.FileQueryInfoFlags.NONE, null);
 
-        let fileInfo;
-        const files = [];
+    let fileInfo;
+    const files = [];
 
-        while ((fileInfo = enumerator.next_file(null)) !== null) {
-            const file = enumerator.get_child(fileInfo);
-            if (fileInfo.get_file_type() === Gio.FileType.REGULAR) {
-                const path = file.get_path()
-                if (path != undefined) {
-                    files.push(path);
-                }
+    while ((fileInfo = enumerator.next_file(null)) !== null) {
+        const file = enumerator.get_child(fileInfo);
+        if (fileInfo.get_file_type() === Gio.FileType.REGULAR) {
+            const path = file.get_path()
+            if (path != undefined) {
+                files.push(path);
             }
         }
-        this.imgs = files
     }
-
-    get(ws: Hyprland.Workspace): string {
-        if (!this.map.has(ws)) {
-            this.map.set(ws, this.imgs[Math.floor(Math.random() * this.imgs.length)])
-        }
-
-        let ret = this.map.get(ws)
-        if (ret == undefined) {
-            console.error(`No img in map for workspace ${ws}`)
-            return "none"
-        }
-        return ret
-    }
-
-    del(ws: Hyprland.Workspace) {
-        this.map.delete(ws)
-    }
+    return files[Math.floor(Math.random() * files.length)]
 }
 
-const ws_img = new WsImg()
 
 
-const Image = (ws: Hyprland.Workspace) => {
-    const img = Gtk.Image.new_from_file(ws_img.get(ws))
+const Image = () => {
+    const img = Gtk.Image.new_from_file(RandImage())
     img.set_visible(true)
     return img
 }
@@ -248,7 +268,7 @@ export default function Background(monitor: Gdk.Monitor) {
             </box>
 
             {/* rigt side = tbd */}
-            {bind(hypr, "focused_workspace").as(fws => Image(fws))}
+            <box/>
             
         </box>
     </window>
